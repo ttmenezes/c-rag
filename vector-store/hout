@@ -1,0 +1,227 @@
+Starting main function
+New element level: 8
+First element added. New num_elements: 1
+Finished inserting vector 0
+New element level: 1
+Connecting at level: 1
+Candidates size: 8
+Connected new element to node 0 at level 1
+Added bidirectional connection to node 0 at level 1
+Connecting at level: 0
+Candidates size: 1
+Connected new element to node 0 at level 0
+Added bidirectional connection to node 0 at level 0
+Finished inserting element. New num_elements: 2
+Finished inserting vector 1
+New element level: 0
+Connecting at level: 0
+Candidates size: 201
+Connected new element to node 0 at level 0
+Added bidirectional connection to node 0 at level 0
+Connected new element to node 1 at level 0
+Added bidirectional connection to node 1 at level 0
+Finished inserting element. New num_elements: 3
+Finished inserting vector 2
+New element level: 0
+Connecting at level: 0
+Candidates size: 201
+Connected new element to node 1 at level 0
+Added bidirectional connection to node 1 at level 0
+Connected new element to node 0 at level 0
+Added bidirectional connection to node 0 at level 0
+Finished inserting element. New num_elements: 4
+Finished inserting vector 3
+New element level: 0
+Connecting at level: 0
+Candidates size: 201
+Connected new element to node 1 at level 0
+Added bidirectional connection to node 1 at level 0
+Connected new element to node 0 at level 0
+Added bidirectional connection to node 0 at level 0
+Finished inserting element. New num_elements: 5
+Finished inserting vector 4
+New element level: 1
+Connecting at level: 1
+Candidates size: 200
+Connected new element to node 0 at level 1
+Added bidirectional connection to node 0 at level 1
+Connected new element to node 1 at level 1
+Added bidirectional connection to node 1 at level 1
+Connecting at level: 0
+Candidates size: 200
+Connected new element to node 0 at level 0
+Added bidirectional connection to node 0 at level 0
+Connected new element to node 2 at level 0
+Added bidirectional connection to node 2 at level 0
+Connected new element to node 1 at level 0
+Added bidirectional connection to node 1 at level 0
+Connected new element to node 3 at level 0
+Added bidirectional connection to node 3 at level 0
+Connected new element to node 4 at level 0
+Added bidirectional connection to node 4 at level 0
+Finished inserting element. New num_elements: 6
+Finished inserting vector 5
+New element level: 2
+Connecting at level: 2
+Candidates size: 7
+Connected new element to node 0 at level 2
+Added bidirectional connection to node 0 at level 2
+Connecting at level: 1
+Candidates size: 200
+Connected new element to node 1 at level 1
+Added bidirectional connection to node 1 at level 1
+Connected new element to node 5 at level 1
+Added bidirectional connection to node 5 at level 1
+Connected new element to node 0 at level 1
+Added bidirectional connection to node 0 at level 1
+Connecting at level: 0
+Candidates size: 200
+Connected new element to node 3 at level 0
+Added bidirectional connection to node 3 at level 0
+Connected new element to node 1 at level 0
+Added bidirectional connection to node 1 at level 0
+Connected new element to node 5 at level 0
+Added bidirectional connection to node 5 at level 0
+Connected new element to node 2 at level 0
+Added bidirectional connection to node 2 at level 0
+Connected new element to node 0 at level 0
+Added bidirectional connection to node 0 at level 0
+Connected new element to node 4 at level 0
+Added bidirectional connection to node 4 at level 0
+Finished inserting element. New num_elements: 7
+Finished inserting vector 6
+New element level: 0
+Connecting at level: 0
+Candidates size: 202
+Connected new element to node 6 at level 0
+Added bidirectional connection to node 6 at level 0
+Connected new element to node 0 at level 0
+Added bidirectional connection to node 0 at level 0
+Finished inserting element. New num_elements: 8
+Finished inserting vector 7
+New element level: 0
+Connecting at level: 0
+Candidates size: 202
+Connected new element to node 0 at level 0
+Added bidirectional connection to node 0 at level 0
+Connected new element to node 6 at level 0
+Added bidirectional connection to node 6 at level 0
+Finished inserting element. New num_elements: 9
+Finished inserting vector 8
+New element level: 0
+Connecting at level: 0
+Candidates size: 202
+Connected new element to node 6 at level 0
+Added bidirectional connection to node 6 at level 0
+Connected new element to node 0 at level 0
+Added bidirectional connection to node 0 at level 0
+Finished inserting element. New num_elements: 10
+Finished inserting vector 9
+New element level: 0
+Connecting at level: 0
+Candidates size: 202
+Connected new element to node 6 at level 0
+Added bidirectional connection to node 6 at level 0
+Connected new element to node 0 at level 0
+Added bidirectional connection to node 0 at level 0
+Finished inserting element. New num_elements: 11
+Finished inserting vector 10
+New element level: 0
+Connecting at level: 0
+Candidates size: 202
+Connected new element to node 0 at level 0
+Added bidirectional connection to node 0 at level 0
+Connected new element to node 6 at level 0
+Added bidirectional connection to node 6 at level 0
+Finished inserting element. New num_elements: 12
+Finished inserting vector 11
+HNSW Stats:
+Number of elements: 12
+Maximum level: 8
+Dimensions: 3
+HNSW Nodes:
+Node 0 (Level 8):
+  Vector: [1.00, 2.00, 3.00]
+  Connections:
+    Level 0: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    Level 1: [1, 5, 6]
+    Level 2: [6]
+    Level 3: []
+    Level 4: []
+    Level 5: []
+    Level 6: []
+    Level 7: []
+    Level 8: []
+
+Node 1 (Level 1):
+  Vector: [1.00, 2.00, 3.50]
+  Connections:
+    Level 0: [0, 2, 3, 4, 5, 6]
+    Level 1: [0, 5, 6]
+
+Node 2 (Level 0):
+  Vector: [1.00, 2.00, 3.00]
+  Connections:
+    Level 0: [0, 1, 5, 6]
+
+Node 3 (Level 0):
+  Vector: [2.50, 3.50, 4.50]
+  Connections:
+    Level 0: [1, 0, 5, 6]
+
+Node 4 (Level 0):
+  Vector: [5.50, 6.50, 7.50]
+  Connections:
+    Level 0: [1, 0, 5, 6]
+
+Node 5 (Level 1):
+  Vector: [1.00, 2.00, 3.10]
+  Connections:
+    Level 0: [0, 2, 1, 3, 4, 6]
+    Level 1: [0, 1, 6]
+
+Node 6 (Level 2):
+  Vector: [3.00, 4.00, 5.00]
+  Connections:
+    Level 0: [3, 1, 5, 2, 0, 4, 7, 8, 9, 10, 11]
+    Level 1: [1, 5, 0]
+    Level 2: [0]
+
+Node 7 (Level 0):
+  Vector: [6.00, 7.00, 8.00]
+  Connections:
+    Level 0: [6, 0]
+
+Node 8 (Level 0):
+  Vector: [1.50, 2.50, 3.50]
+  Connections:
+    Level 0: [0, 6]
+
+Node 9 (Level 0):
+  Vector: [4.50, 5.50, 6.50]
+  Connections:
+    Level 0: [6, 0]
+
+Node 10 (Level 0):
+  Vector: [7.50, 8.50, 9.50]
+  Connections:
+    Level 0: [6, 0]
+
+Node 11 (Level 0):
+  Vector: [0.10, 0.20, 0.30]
+  Connections:
+    Level 0: [0, 6]
+
+Search results:
+Query vector: [1.00, 2.00, 3.00]
+Index      Distance   Vector
+2          0.0000     [1.00, 2.00, 3.00]
+0          0.0000     [1.00, 2.00, 3.00]
+5          0.1000     [1.00, 2.00, 3.10]
+1          0.5000     [1.00, 2.00, 3.50]
+8          0.8660     [1.50, 2.50, 3.50]
+3          2.5981     [2.50, 3.50, 4.50]
+11         3.3675     [0.10, 0.20, 0.30]
+9          6.0622     [4.50, 5.50, 6.50]
+4          7.7942     [5.50, 6.50, 7.50]
+7          8.6603     [6.00, 7.00, 8.00]
