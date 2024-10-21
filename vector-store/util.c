@@ -7,6 +7,6 @@ float euclidean_distance(float* a, float* b, int dimensions) {
         float diff = a[i] - b[i];
         sum += diff * diff;
     }
-    return sqrt(sum);
+    return sqrtf(sum);
 }
 

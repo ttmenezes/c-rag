@@ -8,9 +8,12 @@
 #define VOCAB_SIZE 30522  // Update this to match your model's vocabulary size
 #define MAX_SEQ_LENGTH 512  // Update this if your model uses a different max sequence length
 #define LAYER_NORM_EPS 1e-12f
+#define MAX_EMBEDDINGS 100
 
 static Tokenizer* tokenizer = NULL;
 static Model* model = NULL;
+static float embedding_buffers[MAX_EMBEDDINGS][EMBEDDING_DIM];
+static int current_buffer = 0;
 
 Tokenizer* load_tokenizer(const char* vocab_file) {
     Tokenizer* t = malloc(sizeof(Tokenizer));
@@ -124,6 +127,12 @@ int* tokenize(Tokenizer* tokenizer, const char* text, int* num_tokens) {
         token = strtok(NULL, " ");
     }
 
+    // print tokens
+    for (int i = 0; i < *num_tokens; i++) {
+        printf("%d ", tokens[i]);
+    }
+    printf("\n");
+
     free(text_copy);
     return tokens;
 }
@@ -164,69 +173,97 @@ void matrix_multiply(float* a, float* b, float* c, int m, int n, int k) {
     }
 }
 
-float* embed_text(const char* text) {
-    if (!tokenizer) tokenizer = load_tokenizer("vocab.txt");
-    if (!model) model = load_model("model.bin");
+float* embed_text(const char* text, const char* vocab_file, const char* model_file) {
+    if (!tokenizer) tokenizer = load_tokenizer(vocab_file);
+    if (!model) model = load_model(model_file);
+
+    if (!tokenizer || !model) {
+        fprintf(stderr, "Failed to load tokenizer or model\n");
+        return NULL;
+    }
 
     int num_tokens;
     int* tokens = tokenize(tokenizer, text, &num_tokens);
 
-    float* embedding = calloc(EMBEDDING_DIM, sizeof(float));
-    float* layer_input = calloc(EMBEDDING_DIM, sizeof(float));
-    float* layer_output = calloc(EMBEDDING_DIM, sizeof(float));
-    float* attention_output = calloc(EMBEDDING_DIM, sizeof(float));
-    float* ffn_intermediate = calloc(INTERMEDIATE_SIZE, sizeof(float));
+    float* embedding = embedding_buffers[current_buffer];
+    current_buffer = (current_buffer + 1) % MAX_EMBEDDINGS;
+
+    float* layer_input = calloc(num_tokens * EMBEDDING_DIM, sizeof(float));
+    float* layer_output = calloc(num_tokens * EMBEDDING_DIM, sizeof(float));
+    float* attention_output = calloc(num_tokens * EMBEDDING_DIM, sizeof(float));
+    float* ffn_intermediate = calloc(num_tokens * INTERMEDIATE_SIZE, sizeof(float));
 
     // Embedding layer
     for (int i = 0; i < num_tokens; i++) {
         for (int j = 0; j < EMBEDDING_DIM; j++) {
-            embedding[j] += model->token_embeddings[tokens[i] * EMBEDDING_DIM + j];
-            embedding[j] += model->position_embeddings[i * EMBEDDING_DIM + j];
-            embedding[j] += model->token_type_embeddings[0 * EMBEDDING_DIM + j];  // Assuming token_type_id = 0
+            layer_input[i * EMBEDDING_DIM + j] = model->token_embeddings[tokens[i] * EMBEDDING_DIM + j] +
+                                                 model->position_embeddings[i * EMBEDDING_DIM + j] +
+                                                 model->token_type_embeddings[0 * EMBEDDING_DIM + j];  // Assuming token_type_id = 0
         }
     }
 
-    layer_norm(embedding, layer_input, model->embeddings_layer_norm_weight, model->embeddings_layer_norm_bias, EMBEDDING_DIM);
+    layer_norm(layer_input, layer_output, model->embeddings_layer_norm_weight, model->embeddings_layer_norm_bias, num_tokens * EMBEDDING_DIM);
 
     // Transformer layers
     for (int layer = 0; layer < NUM_HIDDEN_LAYERS; layer++) {
         // Self-attention
-        matrix_multiply(layer_input, model->layers[layer].attention.query, attention_output, 1, EMBEDDING_DIM, EMBEDDING_DIM);
-        matrix_multiply(layer_input, model->layers[layer].attention.key, layer_output, 1, EMBEDDING_DIM, EMBEDDING_DIM);
-        matrix_multiply(layer_input, model->layers[layer].attention.value, embedding, 1, EMBEDDING_DIM, EMBEDDING_DIM);
+        matrix_multiply(layer_output, model->layers[layer].attention.query, attention_output, num_tokens, EMBEDDING_DIM, EMBEDDING_DIM);
+        matrix_multiply(layer_output, model->layers[layer].attention.key, layer_input, num_tokens, EMBEDDING_DIM, EMBEDDING_DIM);
+        matrix_multiply(layer_output, model->layers[layer].attention.value, embedding, num_tokens, EMBEDDING_DIM, EMBEDDING_DIM);
 
         // Simplified attention calculation (this should be more complex in a full implementation)
-        for (int i = 0; i < EMBEDDING_DIM; i++) {
-            attention_output[i] *= layer_output[i];
+        for (int i = 0; i < num_tokens * EMBEDDING_DIM; i++) {
+            attention_output[i] *= layer_input[i];
             attention_output[i] *= embedding[i];
         }
 
-        matrix_multiply(attention_output, model->layers[layer].attention.output, layer_output, 1, EMBEDDING_DIM, EMBEDDING_DIM);
+        matrix_multiply(attention_output, model->layers[layer].attention.output, layer_input, num_tokens, EMBEDDING_DIM, EMBEDDING_DIM);
 
         // Add & Norm
-        for (int i = 0; i < EMBEDDING_DIM; i++) {
-            layer_output[i] += layer_input[i];
+        for (int i = 0; i < num_tokens * EMBEDDING_DIM; i++) {
+            layer_input[i] += layer_output[i];
         }
-        layer_norm(layer_output, attention_output, model->layers[layer].attention_layer_norm_weight, model->layers[layer].attention_layer_norm_bias, EMBEDDING_DIM);
+        layer_norm(layer_input, attention_output, model->layers[layer].attention_layer_norm_weight, model->layers[layer].attention_layer_norm_bias, num_tokens * EMBEDDING_DIM);
 
         // Feed-forward network
-        matrix_multiply(attention_output, model->layers[layer].ffn.intermediate, ffn_intermediate, 1, EMBEDDING_DIM, INTERMEDIATE_SIZE);
-        gelu(ffn_intermediate, INTERMEDIATE_SIZE);
-        matrix_multiply(ffn_intermediate, model->layers[layer].ffn.output, layer_output, 1, INTERMEDIATE_SIZE, EMBEDDING_DIM);
+        matrix_multiply(attention_output, model->layers[layer].ffn.intermediate, ffn_intermediate, num_tokens, EMBEDDING_DIM, INTERMEDIATE_SIZE);
+        gelu(ffn_intermediate, num_tokens * INTERMEDIATE_SIZE);
+        matrix_multiply(ffn_intermediate, model->layers[layer].ffn.output, layer_input, num_tokens, INTERMEDIATE_SIZE, EMBEDDING_DIM);
 
         // Add & Norm
-        for (int i = 0; i < EMBEDDING_DIM; i++) {
-            layer_output[i] += attention_output[i];
+        for (int i = 0; i < num_tokens * EMBEDDING_DIM; i++) {
+            layer_input[i] += attention_output[i];
         }
-        layer_norm(layer_output, layer_input, model->layers[layer].ffn_layer_norm_weight, model->layers[layer].ffn_layer_norm_bias, EMBEDDING_DIM);
+        layer_norm(layer_input, layer_output, model->layers[layer].ffn_layer_norm_weight, model->layers[layer].ffn_layer_norm_bias, num_tokens * EMBEDDING_DIM);
+
+        // Swap layer_input and layer_output for the next iteration
+        float* temp = layer_input;
+        layer_input = layer_output;
+        layer_output = temp;
     }
 
-    // Pooler (simplified, just using the first token)
-    matrix_multiply(layer_input, model->pooler_weight, embedding, 1, EMBEDDING_DIM, EMBEDDING_DIM);
+    // Pooler (more comprehensive version)
+    float* pooled_output = calloc(EMBEDDING_DIM, sizeof(float));
+    float* temp_output = calloc(EMBEDDING_DIM, sizeof(float));
+
+    // Average pooling over all tokens
+    for (int i = 0; i < num_tokens; i++) {
+        for (int j = 0; j < EMBEDDING_DIM; j++) {
+            pooled_output[j] += layer_input[i * EMBEDDING_DIM + j];
+        }
+    }
+    for (int j = 0; j < EMBEDDING_DIM; j++) {
+        pooled_output[j] /= num_tokens;
+    }
+
+    // Apply linear transformation and tanh activation
+    matrix_multiply(pooled_output, model->pooler_weight, temp_output, 1, EMBEDDING_DIM, EMBEDDING_DIM);
     for (int i = 0; i < EMBEDDING_DIM; i++) {
-        embedding[i] = tanhf(embedding[i] + model->pooler_bias[i]);
+        embedding[i] = tanhf(temp_output[i] + model->pooler_bias[i]);
     }
 
+    free(pooled_output);
+    free(temp_output);
     free(tokens);
     free(layer_input);
     free(layer_output);
@@ -269,16 +306,18 @@ void free_model(Model* model) {
     free(model);
 }
 
-int main() {
-    const char* text = "Hello, world!";
-    float* embedding = embed_text(text);
-    
-    printf("Embedding vector:\n");
-    for (int i = 0; i < EMBEDDING_DIM; i++) {
-        printf("%f ", embedding[i]);
-        if ((i + 1) % 8 == 0) printf("\n");  // Print 8 numbers per line for readability
-    }
-    
-    free(embedding);  // Don't forget to free the allocated memory
-    return 0;
-}
+// int main() {
+//     const char* text = "Hello, world!";
+//     const char* vocab_file = "path/to/vocab.txt";
+//     const char* model_file = "path/to/model.bin";
+//     
+//     float* embedding = embed_text(text, vocab_file, model_file);
+//     
+//     if (embedding) {
+//         // ... (print or use the embedding)
+//         free(embedding);
+//     }
+//     
+//     return 0;
+// }
+

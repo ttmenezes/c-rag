@@ -55,7 +55,7 @@ typedef struct {
 Tokenizer* load_tokenizer(const char* vocab_file);
 Model* load_model(const char* model_file);
 int* tokenize(Tokenizer* tokenizer, const char* text, int* num_tokens);
-float* embed_text(const char* text);
+float* embed_text(const char* text, const char* vocab_file, const char* model_file);
 void free_tokenizer(Tokenizer* tokenizer);
 void free_model(Model* model);
 

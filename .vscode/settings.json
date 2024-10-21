@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "priority-queue.h": "c"
+        "priority-queue.h": "c",
+        "hnsw.h": "c"
     }
 }
